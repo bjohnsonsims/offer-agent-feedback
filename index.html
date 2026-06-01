@@ -281,21 +281,56 @@ var entries      = [];
 var selectedSev  = '';
 var activeFilter = 'all';
 
+// ── JSONP — bypasses CORS for Apps Script requests ────────────────────────────
+function jsonp(params) {
+  return new Promise(function (resolve, reject) {
+    var cbName = '_gs_' + Date.now();
+    var script = document.createElement('script');
+    var timer  = setTimeout(function () {
+      cleanup();
+      reject(new Error('Request timed out'));
+    }, 15000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[cbName] = function (data) {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = function () {
+      cleanup();
+      reject(new Error('Script load failed'));
+    };
+
+    params.token    = SECRET_TOKEN;
+    params.callback = cbName;
+    var qs = Object.keys(params).map(function (k) {
+      return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+    }).join('&');
+
+    script.src = APPS_SCRIPT_URL + '?' + qs;
+    document.body.appendChild(script);
+  });
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 loadEntries();
 
 async function loadEntries() {
   setSaveStatus('Loading…');
   try {
-    var res  = await fetch(APPS_SCRIPT_URL + '?token=' + encodeURIComponent(SECRET_TOKEN));
-    var data = await res.json();
+    var data = await jsonp({ action: 'get' });
     if (data.error) throw new Error(data.error);
     entries = data.rows || [];
     updateAll();
     setSaveStatus('Loaded ✓');
   } catch (e) {
     setSaveStatus('');
-    // Silently fall through — sheet may be empty or not deployed yet
   }
 }
 
@@ -367,8 +402,7 @@ async function submitFeedback() {
   btn.textContent = 'Saving…';
 
   try {
-    var params = new URLSearchParams({
-      token:          SECRET_TOKEN,
+    var data = await jsonp({
       action:         'append',
       date:           dateStr,
       name:           name,
@@ -378,8 +412,6 @@ async function submitFeedback() {
       json:           json === 'NA' ? '' : json,
       severity:       selectedSev
     });
-    var res  = await fetch(APPS_SCRIPT_URL + '?' + params.toString());
-    var data = await res.json();
     if (data.error) throw new Error(data.error);
 
     // Optimistic prepend
@@ -519,8 +551,7 @@ async function getInsight(id) {
 async function loadTriageEntries() {
   setSaveStatus('Loading…');
   try {
-    var res  = await fetch(APPS_SCRIPT_URL + '?token=' + encodeURIComponent(SECRET_TOKEN));
-    var data = await res.json();
+    var data = await jsonp({ action: 'get' });
     if (data.error) throw new Error(data.error);
     entries = data.rows || [];
     updateAll();
