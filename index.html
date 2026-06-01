@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offer Creation Agent — Feedback</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --yellow: #FAD105; --orange: #ED5F12;
+  --blue-ring: #658CED; --blue-bg: #D9E2FA; --blue-text: #26438B; --blue-fill: #3F6FE8;
+  --success-bg: #D4F0E0; --success-text: #0F6E56; --success-border: #5DCAA5;
+  --warn-bg: #FAEEDA; --warn-text: #854F0B; --warn-border: #EF9F27;
+  --danger-bg: #FCEBEB; --danger-text: #A32D2D; --danger-border: #E24B4A;
+  --idea-bg: #EDE9FE; --idea-text: #534AB7; --idea-border: #AFA9EC;
+  --neutral-bg: #F0F0F0; --neutral-text: #5F5E5A; --neutral-border: #C0BEB8;
+  --text-primary: #161616; --text-secondary: #555555;
+  --surface: #FFFFFF; --page-bg: #F4F3EF;
+  --border: #E0E0E0; --radius-md: 8px; --radius-full: 1000px;
+}
+body { font-family: 'Inter', sans-serif; background: var(--page-bg); color: var(--text-primary); min-height: 100vh; }
+
+/* TOPBAR */
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-mark { width: 30px; height: 30px; border-radius: 7px; background: linear-gradient(166.6deg, #FAD105 50%, #ED5F12 190%); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.logo-text { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--text-primary); }
+.logo-text span { color: var(--blue-text); }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.badge-count { background: var(--blue-bg); border: 1px solid var(--blue-text); color: var(--blue-text); font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: var(--radius-full); }
+.save-status { font-size: 11px; color: var(--neutral-text); }
+
+/* TABS */
+.tabs-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; gap: 0; }
+.tab { height: 44px; padding: 0 20px; border: none; background: transparent; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: var(--neutral-text); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+.tab:hover { color: var(--text-primary); }
+.tab.active { color: var(--blue-text); border-bottom-color: var(--blue-text); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* LOG TAB */
+.log-layout { display: grid; grid-template-columns: 340px 1fr; min-height: calc(100vh - 89px); }
+.sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 16px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+.sidebar-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--neutral-text); }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+label.field-label { font-size: 14px; font-weight: 600; color: var(--blue-text); }
+label.field-label .opt { font-weight: 400; color: var(--text-secondary); font-size: 12px; }
+input.field-input, select.field-input { height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--surface); outline: none; width: 100%; }
+input.field-input:focus, select.field-input:focus, textarea.field-input:focus { box-shadow: 0 0 0 2px var(--blue-ring); border-color: transparent; }
+textarea.field-input { min-height: 76px; padding: 10px 12px; resize: vertical; line-height: 1.5; font-size: 14px; }
+textarea.json-area { min-height: 90px; font-family: 'Courier New', monospace; font-size: 11.5px; color: #333; background: #FAFAFA; }
+.field-hint { font-size: 11.5px; color: var(--text-secondary); line-height: 1.4; }
+
+.severity-group { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.sev-btn { height: 36px; border-radius: var(--radius-full); border: 1px solid; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; background: white; font-family: 'Inter', sans-serif; }
+.sev-btn[data-sev="blocker"] { border-color: var(--danger-border); color: var(--danger-text); }
+.sev-btn[data-sev="wrong"] { border-color: var(--warn-border); color: var(--warn-text); }
+.sev-btn[data-sev="minor"] { border-color: var(--success-border); color: var(--success-text); }
+.sev-btn[data-sev="idea"] { border-color: var(--idea-border); color: var(--idea-text); }
+.sev-btn.active[data-sev="blocker"] { background: var(--danger-bg); }
+.sev-btn.active[data-sev="wrong"] { background: var(--warn-bg); }
+.sev-btn.active[data-sev="minor"] { background: var(--success-bg); }
+.sev-btn.active[data-sev="idea"] { background: var(--idea-bg); }
+
+.submit-btn { height: 48px; border: none; border-radius: var(--radius-full); background: linear-gradient(166.6deg, #FAD105 50%, #ED5F12 190%); font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: opacity 0.15s; }
+.submit-btn:hover { opacity: 0.88; }
+
+/* ENTRY LIST */
+.entry-list-panel { padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.filter-chip { height: 30px; padding: 0 12px; border-radius: var(--radius-full); border: 1px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 600; color: var(--neutral-text); cursor: pointer; transition: all 0.12s; font-family: 'Inter', sans-serif; }
+.filter-chip.active { background: var(--blue-bg); border-color: var(--blue-text); color: var(--blue-text); }
+.filter-chip[data-filter="blocker"].active { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger-text); }
+.filter-chip[data-filter="wrong"].active { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); }
+.filter-chip[data-filter="minor"].active { background: var(--success-bg); border-color: var(--success-border); color: var(--success-text); }
+.filter-chip[data-filter="idea"].active { background: var(--idea-bg); border-color: var(--idea-border); color: var(--idea-text); }
+
+.entry-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; cursor: pointer; transition: box-shadow 0.15s; }
+.entry-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+.entry-header { display: flex; align-items: flex-start; gap: 10px; }
+.sev-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.sev-dot.blocker { background: var(--danger-border); }
+.sev-dot.wrong { background: var(--warn-border); }
+.sev-dot.minor { background: var(--success-border); }
+.sev-dot.idea { background: var(--idea-border); }
+.entry-main { flex: 1; min-width: 0; }
+.entry-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.entry-meta { font-size: 11.5px; color: var(--text-secondary); display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
+.entry-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.ebadge { font-size: 10.5px; padding: 1px 7px; border-radius: var(--radius-full); border: 1px solid; font-weight: 600; }
+.ebadge.blocker { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger-text); }
+.ebadge.wrong { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); }
+.ebadge.minor { background: var(--success-bg); border-color: var(--success-border); color: var(--success-text); }
+.ebadge.idea { background: var(--idea-bg); border-color: var(--idea-border); color: var(--idea-text); }
+.ebadge.has-json { background: #1E1E1E; color: #9CDCFE; border-color: #333; }
+.ebadge.has-screenshot { background: var(--blue-bg); border-color: var(--blue-text); color: var(--blue-text); }
+.ebadge.analyzed { background: var(--blue-bg); border-color: var(--blue-ring); color: var(--blue-text); }
+
+.entry-expand { padding-top: 10px; border-top: 1px solid var(--border); margin-top: 10px; display: none; }
+.entry-expand.visible { display: block; }
+.expand-label { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--neutral-text); margin-bottom: 3px; margin-top: 10px; }
+.expand-label:first-child { margin-top: 0; }
+.expand-text { font-size: 13px; color: var(--text-primary); line-height: 1.6; }
+.expand-link { font-size: 13px; color: var(--blue-fill); text-decoration: underline; word-break: break-all; }
+.json-block { font-family: 'Courier New', monospace; font-size: 11px; background: #1E1E1E; color: #9CDCFE; padding: 10px 12px; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; line-height: 1.5; max-height: 160px; overflow-y: auto; word-break: break-all; }
+.ai-insight { margin-top: 10px; background: var(--blue-bg); border: 1px solid var(--blue-ring); border-radius: var(--radius-md); padding: 10px 12px; font-size: 13px; color: var(--blue-text); line-height: 1.6; }
+.ai-insight-label { font-weight: 600; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; opacity: 0.7; }
+.insight-btn { margin-top: 10px; height: 30px; padding: 0 14px; border-radius: var(--radius-full); border: 1px solid var(--blue-text); background: transparent; color: var(--blue-text); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; }
+.insight-btn:hover { background: var(--blue-bg); }
+.insight-btn:disabled { opacity: 0.45; cursor: wait; }
+
+.empty-state { text-align: center; padding: 50px 20px; color: var(--neutral-text); }
+.empty-icon { font-size: 36px; margin-bottom: 10px; }
+.empty-title { font-size: 15px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
+.empty-sub { font-size: 12.5px; }
+
+/* TRIAGE TAB */
+.triage-panel { max-width: 800px; margin: 0 auto; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; }
+.triage-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.triage-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text-primary); }
+.triage-sub { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
+.triage-run-btn { height: 44px; padding: 0 20px; border-radius: var(--radius-full); border: none; background: linear-gradient(166.6deg, #FAD105 50%, #ED5F12 190%); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--text-primary); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+.triage-run-btn:hover { opacity: 0.88; }
+.triage-run-btn:disabled { opacity: 0.45; cursor: wait; }
+.triage-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.stat-pill { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--surface); font-size: 13px; }
+.stat-pill .stat-num { font-size: 22px; font-weight: 600; font-family: 'DM Serif Display', serif; }
+.stat-pill.total { background: var(--blue-bg); border-color: var(--blue-text); color: var(--blue-text); }
+.stat-pill.blocker { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger-text); }
+.stat-pill.wrong { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); }
+.stat-pill.minor { background: var(--success-bg); border-color: var(--success-border); color: var(--success-text); }
+.stat-pill.idea { background: var(--idea-bg); border-color: var(--idea-border); color: var(--idea-text); }
+.triage-output-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; font-size: 13.5px; line-height: 1.8; color: var(--text-primary); white-space: pre-wrap; min-height: 200px; }
+.triage-output-box.placeholder { color: var(--neutral-text); font-style: italic; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; }
+.triage-output-box.loading-state { color: var(--neutral-text); animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.45; } }
+.triage-note { font-size: 12px; color: var(--neutral-text); background: var(--neutral-bg); border-radius: var(--radius-md); padding: 10px 14px; line-height: 1.5; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--text-primary); color: white; padding: 10px 18px; border-radius: var(--radius-full); font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 100; }
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-mark">🤖</div>
+    <div class="logo-text">Offer Creation Agent — <span>Feedback</span></div>
+  </div>
+  <div class="topbar-right">
+    <span class="save-status" id="saveStatus">Loading…</span>
+    <span class="badge-count" id="entryCount">0 entries</span>
+  </div>
+</div>
+
+<div class="tabs-bar">
+  <button class="tab active" onclick="switchTab('log')">📝 Log Feedback</button>
+  <button class="tab" onclick="switchTab('triage')" id="triageTabBtn">📊 Triage <span id="blockerBadge" style="display:none;font-size:10px;background:var(--danger-bg);color:var(--danger-text);border:1px solid var(--danger-border);padding:1px 6px;border-radius:99px;margin-left:2px"></span></button>
+</div>
+
+<!-- LOG TAB -->
+<div class="tab-panel active" id="panel-log">
+  <div class="log-layout">
+
+    <div class="sidebar">
+      <div class="sidebar-title">New Entry</div>
+
+      <div class="form-group">
+        <label class="field-label">Your name</label>
+        <select class="field-input" id="testerName">
+          <option value="">Select your name…</option>
+          <option>Aaron Parris</option><option>Aidan Nelson</option><option>Alexandra Desjarlais</option>
+          <option>Alissa Persichetti</option><option>Allie Wilson Stein</option><option>Andrew Lewandowski</option>
+          <option>Briana Johnson-Sims</option><option>Brittney Noe</option><option>Colin Moran</option>
+          <option>Dustin True</option><option>Erik Malinowski</option><option>Filip Mirkovic</option>
+          <option>Jackie Kang</option><option>Jaime Koteen</option><option>James Grecco</option>
+          <option>Jamie Hernandez</option><option>Jeff Mather</option><option>Jessica Martin</option>
+          <option>Joe Griffin</option><option>John Madden</option><option>Kristine Ko</option>
+          <option>Lillian Lee</option><option>Lucas Dominique Javier</option><option>Mallory Eichhorn</option>
+          <option>Michael Abbatiello</option><option>Michael Munoz</option><option>Michael Squitieri</option>
+          <option>Rob Cvetan</option><option>Rob DiClemente</option><option>Trevor Mann</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label">What I asked</label>
+        <textarea class="field-input" id="attempted" placeholder="The prompt you typed, as close to word-for-word as you can…"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label">What happened</label>
+        <textarea class="field-input" id="actual" placeholder="What the agent did, in your own words…"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label">Screenshot link <span class="opt">(optional)</span></label>
+        <input class="field-input" id="screenshotLink" type="url" placeholder="Paste Drive or Slack link…" />
+        <span class="field-hint">Drop screenshot in the <a href="https://drive.google.com/drive/folders/1Vgb42rjaAz7I-ADtMbsk5enzCaV8K1U6" target="_blank" style="color:var(--blue-fill)">shared Drive folder</a>, then paste the link here.</span>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label">Tool calls / JSON <span class="opt">(optional)</span></label>
+        <textarea class="field-input json-area" id="jsonInput" placeholder="Paste raw JSON here if you have it. Otherwise leave blank or write NA."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label">How bad?</label>
+        <div class="severity-group">
+          <button class="sev-btn" data-sev="blocker" onclick="setSev('blocker')">🔴 Blocker</button>
+          <button class="sev-btn" data-sev="wrong" onclick="setSev('wrong')">🟡 Wrong</button>
+          <button class="sev-btn" data-sev="minor" onclick="setSev('minor')">🟢 Minor</button>
+          <button class="sev-btn" data-sev="idea" onclick="setSev('idea')">💡 Idea</button>
+        </div>
+      </div>
+
+      <button class="submit-btn" onclick="submitFeedback()">Log Feedback →</button>
+    </div>
+
+    <!-- ENTRY LIST -->
+    <div class="entry-list-panel">
+      <div class="filter-row">
+        <button class="filter-chip active" data-filter="all" onclick="setFilter('all')">All</button>
+        <button class="filter-chip" data-filter="blocker" onclick="setFilter('blocker')">🔴 Blocker</button>
+        <button class="filter-chip" data-filter="wrong" onclick="setFilter('wrong')">🟡 Wrong</button>
+        <button class="filter-chip" data-filter="minor" onclick="setFilter('minor')">🟢 Minor</button>
+        <button class="filter-chip" data-filter="idea" onclick="setFilter('idea')">💡 Idea</button>
+      </div>
+      <div id="entriesList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TRIAGE TAB (Matt + Rami) -->
+<div class="tab-panel" id="panel-triage">
+  <div class="triage-panel">
+    <div class="triage-header">
+      <div>
+        <div class="triage-title">Triage Report</div>
+        <div class="triage-sub">For Matt Mastrangelo + Rami — synthesized by Claude from all logged entries</div>
+      </div>
+      <button class="triage-run-btn" id="triageRunBtn" onclick="runTriage()">✦ Run Triage</button>
+    </div>
+
+    <div class="triage-stats" id="triageStats"></div>
+
+    <div class="triage-note">Triage report covers all entries. Matt fills in Type, Status, and INFD ticket in the <a href="https://docs.google.com/spreadsheets/d/132VI-4veW4uUKPwCMQSh-ejoQinEAv9bxvpw-ZTt5kc/edit" target="_blank" style="color:var(--blue-fill)">shared Google Sheet</a> once issues are confirmed.</div>
+
+    <div class="triage-output-box placeholder" id="triageOutput">
+      Run triage to generate a prioritized report from all logged entries.
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let entries = [];
+let selectedSev = '';
+let activeFilter = 'all';
+const STORAGE_KEY = 'fevo-offer-agent-feedback-v1';
+
+// ── STORAGE ──────────────────────────────────────────────
+async function loadEntries() {
+  try {
+    const result = await window.storage.get(STORAGE_KEY, true);
+    entries = result ? JSON.parse(result.value) : [];
+  } catch { entries = []; }
+  updateAll();
+  setSaveStatus('Loaded ✓');
+}
+
+async function saveEntries() {
+  try {
+    setSaveStatus('Saving…');
+    await window.storage.set(STORAGE_KEY, JSON.stringify(entries), true);
+    setSaveStatus('Saved ✓');
+  } catch { setSaveStatus('Save failed'); }
+}
+
+function setSaveStatus(msg) { document.getElementById('saveStatus').textContent = msg; }
+
+// ── TABS ─────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['log','triage'][i] === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${name}`).classList.add('active');
+  if (name === 'triage') renderStats();
+}
+
+// ── SEVERITY ─────────────────────────────────────────────
+function setSev(sev) {
+  selectedSev = sev;
+  document.querySelectorAll('.sev-btn').forEach(b => b.classList.toggle('active', b.dataset.sev === sev));
+}
+
+function sevLabel(s) {
+  return s === 'blocker' ? '🔴 Blocker' : s === 'wrong' ? '🟡 Wrong' : s === 'minor' ? '🟢 Minor' : '💡 Idea';
+}
+
+// ── FILTER ───────────────────────────────────────────────
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === f));
+  renderEntries();
+}
+
+// ── TOAST ────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ── SUBMIT ───────────────────────────────────────────────
+async function submitFeedback() {
+  const name = document.getElementById('testerName').value;
+  const attempted = document.getElementById('attempted').value.trim();
+  const actual = document.getElementById('actual').value.trim();
+  const screenshotLink = document.getElementById('screenshotLink').value.trim();
+  const json = document.getElementById('jsonInput').value.trim();
+
+  if (!name || !attempted || !actual || !selectedSev) {
+    showToast('Please fill in name, what you asked, what happened, and severity.');
+    return;
+  }
+
+  const entry = {
+    id: Date.now(),
+    date: new Date().toISOString().split('T')[0],
+    name, attempted, actual, screenshotLink,
+    json: json === 'NA' ? '' : json,
+    severity: selectedSev,
+    timestamp: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+    insight: null
+  };
+  entries.unshift(entry);
+  await saveEntries();
+
+  document.getElementById('testerName').value = '';
+  document.getElementById('attempted').value = '';
+  document.getElementById('actual').value = '';
+  document.getElementById('screenshotLink').value = '';
+  document.getElementById('jsonInput').value = '';
+  setSev(''); selectedSev = '';
+
+  updateAll();
+  showToast('✓ Feedback saved!');
+}
+
+// ── RENDER ───────────────────────────────────────────────
+function updateAll() {
+  updateCount();
+  renderEntries();
+  updateBlockerBadge();
+}
+
+function updateCount() {
+  document.getElementById('entryCount').textContent = `${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}`;
+}
+
+function updateBlockerBadge() {
+  const n = entries.filter(e => e.severity === 'blocker').length;
+  const b = document.getElementById('blockerBadge');
+  b.style.display = n > 0 ? 'inline' : 'none';
+  b.textContent = `${n} blocker${n !== 1 ? 's' : ''}`;
+}
+
+function renderEntries() {
+  const list = document.getElementById('entriesList');
+  const filtered = activeFilter === 'all' ? entries : entries.filter(e => e.severity === activeFilter);
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">${activeFilter !== 'all' ? '🔍' : '📋'}</div><div class="empty-title">${activeFilter !== 'all' ? 'No entries at this level' : 'No feedback yet'}</div><div class="empty-sub">${activeFilter !== 'all' ? 'Try a different filter.' : 'Use the form on the left to log the first entry.'}</div></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(e => `
+    <div class="entry-card" id="card-${e.id}" onclick="toggleExpand(${e.id})">
+      <div class="entry-header">
+        <div class="sev-dot ${e.severity}"></div>
+        <div class="entry-main">
+          <div class="entry-title">${escHtml(e.attempted)}</div>
+          <div class="entry-meta">
+            <span>${escHtml(e.name)}</span>
+            <span>· ${e.date}</span>
+            <span>· ${e.timestamp}</span>
+          </div>
+          <div class="entry-badges">
+            <span class="ebadge ${e.severity}">${sevLabel(e.severity)}</span>
+            ${e.screenshotLink ? `<span class="ebadge has-screenshot">📎 Screenshot</span>` : ''}
+            ${e.json ? `<span class="ebadge has-json">{ } JSON</span>` : ''}
+            ${e.insight ? `<span class="ebadge analyzed">✦ Analyzed</span>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="entry-expand" id="expand-${e.id}">
+        <div class="expand-label">What happened</div>
+        <div class="expand-text">${escHtml(e.actual)}</div>
+        ${e.screenshotLink ? `<div class="expand-label" style="margin-top:10px">Screenshot</div><a class="expand-link" href="${escHtml(e.screenshotLink)}" target="_blank" onclick="event.stopPropagation()">${escHtml(e.screenshotLink)}</a>` : ''}
+        ${e.json ? `<div class="expand-label" style="margin-top:10px">Tool Calls / JSON</div><div class="json-block">${escHtml(prettyJson(e.json))}</div>` : ''}
+        ${e.insight
+          ? `<div class="ai-insight"><div class="ai-insight-label">✦ Claude's analysis</div>${escHtml(e.insight)}</div>`
+          : `<button class="insight-btn" onclick="event.stopPropagation(); getInsight(${e.id})">✦ Ask Claude about this entry</button>`}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleExpand(id) {
+  document.getElementById(`expand-${id}`)?.classList.toggle('visible');
+}
+
+function prettyJson(str) {
+  try { return JSON.stringify(JSON.parse(str), null, 2); } catch { return str; }
+}
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── PER-ENTRY INSIGHT ────────────────────────────────────
+async function getInsight(id) {
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+  const btn = document.querySelector(`#card-${id} .insight-btn`);
+  if (btn) { btn.textContent = '✦ Thinking…'; btn.disabled = true; }
+
+  const prompt = `You are triaging QA feedback for FEVO's AI Offer Creation Agent (built with Claude, tested against real ticketing data). A tester submitted this:
+
+Severity: ${sevLabel(entry.severity)}
+Tester: ${entry.name}
+Prompt they used: ${entry.attempted}
+What happened: ${entry.actual}
+${entry.json ? `Tool call / JSON: ${entry.json}` : ''}
+
+In 2–3 sentences: what's the likely root cause, and what's the specific recommended fix for Matt (the agent builder) or Rami (front-end)? Be direct and specific.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    entry.insight = data.content?.find(b => b.type === 'text')?.text || 'No response.';
+    await saveEntries();
+    renderEntries();
+    document.getElementById(`expand-${id}`)?.classList.add('visible');
+  } catch {
+    if (btn) { btn.textContent = '✦ Ask Claude about this entry'; btn.disabled = false; }
+    showToast('Claude unavailable — try again.');
+  }
+}
+
+// ── TRIAGE STATS + REPORT ────────────────────────────────
+function renderStats() {
+  const counts = { blocker: 0, wrong: 0, minor: 0, idea: 0 };
+  entries.forEach(e => counts[e.severity]++);
+  document.getElementById('triageStats').innerHTML = `
+    <div class="stat-pill total"><span class="stat-num">${entries.length}</span> total</div>
+    <div class="stat-pill blocker"><span class="stat-num">${counts.blocker}</span> Blockers</div>
+    <div class="stat-pill wrong"><span class="stat-num">${counts.wrong}</span> Wrong</div>
+    <div class="stat-pill minor"><span class="stat-num">${counts.minor}</span> Minor</div>
+    <div class="stat-pill idea"><span class="stat-num">${counts.idea}</span> Ideas</div>
+  `;
+}
+
+async function runTriage() {
+  if (entries.length === 0) { showToast('No entries to triage yet.'); return; }
+  const btn = document.getElementById('triageRunBtn');
+  const out = document.getElementById('triageOutput');
+  btn.disabled = true; btn.textContent = '✦ Running…';
+  out.className = 'triage-output-box loading-state';
+  out.textContent = 'Claude is analyzing all entries…';
+  renderStats();
+
+  const summary = entries.map((e, i) =>
+    `${i+1}. [${sevLabel(e.severity).toUpperCase()}] ${e.name} — ${e.date}\n   Asked: ${e.attempted}\n   Result: ${e.actual}${e.json ? `\n   JSON: ${e.json.slice(0,400)}` : ''}`
+  ).join('\n\n');
+
+  const prompt = `You are triaging QA feedback for FEVO's AI Offer Creation Agent. Here are all ${entries.length} logged entries from testers:
+
+${summary}
+
+Generate a triage report for Matt Mastrangelo (agent/AI builder) and Rami (front-end). Use exactly this format:
+
+🔴 BLOCKERS — fix before any wider rollout:
+[numbered list, or "None"]
+
+🟡 WRONG OUTPUT — incorrect or incomplete agent behavior:
+[numbered list, or "None"]
+
+🟢 MINOR — polish or edge cases:
+[numbered list, or "None"]
+
+💡 IDEAS — tester suggestions worth considering:
+[numbered list, or "None"]
+
+📊 PATTERNS:
+[2–3 sentences on recurring themes, common failure modes, or data gaps]
+
+✅ TOP 3 NEXT STEPS:
+1. [specific action] — Owner: [Matt or Rami]
+2. [specific action] — Owner: [Matt or Rami]
+3. [specific action] — Owner: [Matt or Rami]
+
+Max 350 words. Be specific — reference tester names and prompts where relevant.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    out.className = 'triage-output-box';
+    out.textContent = data.content?.find(b => b.type === 'text')?.text || 'No response.';
+  } catch {
+    out.className = 'triage-output-box';
+    out.textContent = 'Claude unavailable — please try again.';
+  }
+  btn.disabled = false; btn.textContent = '✦ Run Triage';
+}
+
+loadEntries();
+</script>
+</body>
+</html>
