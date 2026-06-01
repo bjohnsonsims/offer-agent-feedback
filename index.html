@@ -249,17 +249,17 @@ textarea.json-area { min-height: 90px; font-family: 'Courier New', monospace; fo
     <div class="triage-header">
       <div>
         <div class="triage-title">Triage Report</div>
-        <div class="triage-sub">For Matt Mastrangelo + Rami — synthesized by Claude from all logged entries</div>
+        <div class="triage-sub">For Matt Mastrangelo + Rami — paste the prompt into Claude.ai to generate a report</div>
       </div>
-      <button class="triage-run-btn" id="triageRunBtn" onclick="runTriage()">✦ Run Triage</button>
+      <button class="triage-run-btn" id="triageCopyBtn" onclick="copyTriagePrompt()">✦ Copy Prompt</button>
     </div>
 
     <div class="triage-stats" id="triageStats"></div>
 
-    <div class="triage-note">Triage report covers all entries. Matt fills in Type, Status, and INFD ticket in the <a href="https://docs.google.com/spreadsheets/d/132VI-4veW4uUKPwCMQSh-ejoQinEAv9bxvpw-ZTt5kc/edit" target="_blank" style="color:var(--blue-fill)">shared Google Sheet</a> once issues are confirmed.</div>
+    <div class="triage-note">Click <strong>Copy Prompt</strong> to copy all entries as a ready-to-paste Claude prompt, then open <a href="https://claude.ai" target="_blank" style="color:var(--blue-fill)">claude.ai</a> and paste. Matt fills in Type, Status, and INFD ticket in the <a href="https://docs.google.com/spreadsheets/d/132VI-4veW4uUKPwCMQSh-ejoQinEAv9bxvpw-ZTt5kc/edit" target="_blank" style="color:var(--blue-fill)">shared Google Sheet</a> once issues are confirmed.</div>
 
-    <div class="triage-output-box placeholder" id="triageOutput">
-      Run triage to generate a prioritized report from all logged entries.
+    <div class="triage-copy-confirm" id="triageCopyConfirm" style="display:none;background:var(--success-bg);border:1px solid var(--success-border);color:var(--success-text);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;">
+      ✓ Prompt copied — open <a href="https://claude.ai/new" target="_blank" style="color:var(--success-text);font-weight:600;">claude.ai</a> and paste it in.
     </div>
 
     <div class="triage-entries" id="triageEntries" style="display:none">
@@ -583,13 +583,8 @@ function renderStats() {
     + '<div class="stat-pill idea"><span class="stat-num">'    + counts.idea      + '</span> Ideas</div>';
 }
 
-async function runTriage() {
-  if (entries.length === 0) { showToast('No entries to triage yet.'); return; }
-  var btn = document.getElementById('triageRunBtn');
-  var out = document.getElementById('triageOutput');
-  btn.disabled = true; btn.textContent = '✦ Running…';
-  out.className   = 'triage-output-box loading-state';
-  out.textContent = 'Claude is analyzing all entries…';
+function copyTriagePrompt() {
+  if (entries.length === 0) { showToast('No entries to copy yet.'); return; }
 
   var summary = entries.map(function (e, i) {
     return (i + 1) + '. [' + sevLabel(e.severity).toUpperCase() + '] ' + e.name + ' — ' + e.date
@@ -599,30 +594,25 @@ async function runTriage() {
   }).join('\n\n');
 
   var prompt = 'You are triaging QA feedback for FEVO\'s AI Offer Creation Agent. Here are all '
-    + entries.length + ' logged entries:\n\n' + summary
+    + entries.length + ' logged entries from testers:\n\n' + summary
     + '\n\nGenerate a triage report for Matt Mastrangelo (agent/AI builder) and Rami (front-end). Use exactly this format:\n\n'
     + '🔴 BLOCKERS — fix before any wider rollout:\n[numbered list, or "None"]\n\n'
     + '🟡 WRONG OUTPUT — incorrect or incomplete agent behavior:\n[numbered list, or "None"]\n\n'
     + '🟢 MINOR — polish or edge cases:\n[numbered list, or "None"]\n\n'
     + '💡 IDEAS — tester suggestions worth considering:\n[numbered list, or "None"]\n\n'
-    + '📊 PATTERNS:\n[2–3 sentences on recurring themes]\n\n'
-    + '✅ TOP 3 NEXT STEPS:\n1. [action] — Owner: [Matt or Rami]\n2. [action] — Owner: [Matt or Rami]\n3. [action] — Owner: [Matt or Rami]\n\n'
-    + 'Max 350 words. Reference tester names and prompts where relevant.';
+    + '📊 PATTERNS:\n[2–3 sentences on recurring themes, common failure modes, or data gaps]\n\n'
+    + '✅ TOP 3 NEXT STEPS:\n1. [specific action] — Owner: [Matt or Rami]\n2. [specific action] — Owner: [Matt or Rami]\n3. [specific action] — Owner: [Matt or Rami]\n\n'
+    + 'Max 350 words. Be specific — reference tester names and prompts where relevant.';
 
-  try {
-    var res  = await fetch('https://api.anthropic.com/v1/messages', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
-    });
-    var data = await res.json();
-    out.className   = 'triage-output-box';
-    out.textContent = (data.content || []).find(function (b) { return b.type === 'text'; })?.text || 'No response.';
-  } catch (x) {
-    out.className   = 'triage-output-box';
-    out.textContent = 'Claude unavailable — please try again.';
-  }
-  btn.disabled = false; btn.textContent = '✦ Run Triage';
+  navigator.clipboard.writeText(prompt).then(function () {
+    var confirm = document.getElementById('triageCopyConfirm');
+    confirm.style.display = 'block';
+    var btn = document.getElementById('triageCopyBtn');
+    btn.textContent = '✓ Copied!';
+    setTimeout(function () { btn.textContent = '✦ Copy Prompt'; }, 2500);
+  }).catch(function () {
+    showToast('Could not copy — try again.');
+  });
 }
 </script>
 </body>
