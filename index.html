@@ -367,22 +367,33 @@ async function submitFeedback() {
   btn.textContent = 'Saving…';
 
   try {
-    var res = await fetch(APPS_SCRIPT_URL, {
-      method:  'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body:    JSON.stringify({
-        token:          SECRET_TOKEN,
-        date:           dateStr,
-        name:           name,
-        attempted:      attempted,
-        actual:         actual,
-        screenshotLink: screenshotLink,
-        json:           json === 'NA' ? '' : json,
-        severity:       selectedSev
-      })
+    // Apps Script redirects POST requests, which causes browsers to drop the body.
+    // Workaround: send as no-cors (blind fire), then poll the GET endpoint to confirm the row landed.
+    var payload = JSON.stringify({
+      token:          SECRET_TOKEN,
+      date:           dateStr,
+      name:           name,
+      attempted:      attempted,
+      actual:         actual,
+      screenshotLink: screenshotLink,
+      json:           json === 'NA' ? '' : json,
+      severity:       selectedSev
     });
-    var data = await res.json();
-    if (data.error) throw new Error(data.error);
+
+    await fetch(APPS_SCRIPT_URL, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body:    payload
+    });
+
+    // Wait briefly then verify via GET that row count increased
+    await new Promise(function (r) { setTimeout(r, 1500); });
+    var countBefore = entries.length;
+    var checkRes  = await fetch(APPS_SCRIPT_URL + '?token=' + encodeURIComponent(SECRET_TOKEN));
+    var checkData = await checkRes.json();
+    if (checkData.error) throw new Error(checkData.error);
+    if ((checkData.rows || []).length <= countBefore) throw new Error('Row did not appear in Sheet — please try again.');
 
     // Optimistic prepend
     entries.unshift({
