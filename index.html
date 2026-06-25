@@ -341,7 +341,7 @@ a:hover{text-decoration:underline}
 <script>
 // ── CONFIG ──
 var SHEET_ID = '132VI-4veW4uUKPwCMQSh-ejoQinEAv9bxvpw-ZTt5kc';
-var SHEET_TAB = 'Sheet1';
+var SHEET_TAB = 'Feedback Log';
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzArJI22fclKthWPZ88o9LL01B_bljmndv0y_cPouYSRHGwXOupXbBK-PPSjJVZ-yOt/exec';
 
 // Entries stored in memory; archived state persisted in localStorage
@@ -544,22 +544,21 @@ function submitEntry() {
   btn.disabled = true;
   btn.textContent = 'Logging…';
 
-  // POST to Apps Script → writes to Google Sheet
-  fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      timestamp: ts,
-      name: name,
-      prompt: prompt,
-      result: result,
-      screenshot: screenshot,
-      json: json,
-      severity: sevLabel
-    })
+  // GET to Apps Script with no-cors (avoids CORS block; Apps Script handles the row write)
+  var params = new URLSearchParams({
+    timestamp: ts,
+    name: name,
+    prompt: prompt,
+    result: result,
+    screenshot: screenshot,
+    json: json,
+    severity: sevLabel
+  });
+  fetch(APPS_SCRIPT_URL + '?' + params.toString(), {
+    method: 'GET',
+    mode: 'no-cors'
   })
   .then(function() {
-    // Optimistically add to local list and reload from sheet
     entries.unshift({
       id: 'local-' + Date.now(),
       timestamp: ts,
@@ -572,8 +571,7 @@ function submitEntry() {
     });
     updateCount();
     showSuccess();
-    // Reload from sheet after a short delay so the new row appears
-    setTimeout(loadEntries, 1500);
+    setTimeout(loadEntries, 2000);
   })
   .catch(function(err) {
     console.error('Submission error:', err);
