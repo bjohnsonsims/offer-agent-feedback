@@ -340,9 +340,8 @@ a:hover{text-decoration:underline}
 
 <script>
 // ── CONFIG ──
-var SHEET_ID = '132VI-4veW4uUKPwCMQSh-ejoQinEAv9bxvpw-ZTt5kc';
-var SHEET_TAB = 'Feedback Log';
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzArJI22fclKthWPZ88o9LL01B_bljmndv0y_cPouYSRHGwXOupXbBK-PPSjJVZ-yOt/exec';
+var SECRET_TOKEN = 'LrMaiNRq-YKBMFslT8wfX4GMcEG4_v-t';
 
 // Entries stored in memory; archived state persisted in localStorage
 var entries = [];
@@ -383,31 +382,29 @@ document.querySelectorAll('.filter-btn').forEach(function(btn) {
 
 // ── LOAD FROM SHEET ──
 function loadEntries() {
-  var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(SHEET_TAB);
-  var script = document.createElement('script');
-  window._sheetCallback = function(data) {
-    var rows = data.table.rows;
-    entries = [];
-    rows.forEach(function(row, i) {
-      if (!row.c || !row.c[0] || !row.c[0].v) return;
-      var cells = row.c;
-      entries.push({
-        id: 'row-' + i,
-        timestamp: cells[0] ? cells[0].v : '',
-        name:      cells[1] ? cells[1].v : '',
-        prompt:    cells[2] ? cells[2].v : '',
-        result:    cells[3] ? cells[3].v : '',
-        screenshot:cells[4] ? cells[4].v : '',
-        json:      cells[5] ? cells[5].v : '',
-        severity:  cells[6] ? cells[6].v : ''
-      });
+  var cbName = '_asCallback' + Date.now();
+  var params = new URLSearchParams({ token: SECRET_TOKEN, callback: cbName });
+  window[cbName] = function(data) {
+    delete window[cbName];
+    if (data.error) { console.error('Sheet load error:', data.error); return; }
+    entries = (data.rows || []).map(function(r) {
+      return {
+        id:         'row-' + r.id,
+        timestamp:  r.date,
+        name:       r.name,
+        prompt:     r.attempted,
+        result:     r.actual,
+        screenshot: r.screenshotLink,
+        json:       r.json,
+        severity:   r.severity
+      };
     });
-    // Reverse so newest first
-    entries.reverse();
+    // Already reversed by Apps Script (newest first)
     updateCount();
     renderEntries();
   };
-  script.src = url + '&tqx=out:json&callback=_sheetCallback';
+  var script = document.createElement('script');
+  script.src = APPS_SCRIPT_URL + '?' + params.toString();
   document.head.appendChild(script);
 }
 
@@ -544,45 +541,53 @@ function submitEntry() {
   btn.disabled = true;
   btn.textContent = 'Logging…';
 
-  // GET to Apps Script with no-cors (avoids CORS block; Apps Script handles the row write)
+  // Use JSONP to submit (avoids CORS; Apps Script handles via doGet with action=append)
+  var cbName = '_submitCallback' + Date.now();
   var params = new URLSearchParams({
-    timestamp: ts,
-    name: name,
-    prompt: prompt,
-    result: result,
-    screenshot: screenshot,
-    json: json,
-    severity: sevLabel
+    token:          SECRET_TOKEN,
+    action:         'append',
+    date:           ts.slice(0, 10),
+    name:           name,
+    attempted:      prompt,
+    actual:         result,
+    screenshotLink: screenshot,
+    json:           json,
+    severity:       sevLabel,
+    callback:       cbName
   });
-  fetch(APPS_SCRIPT_URL + '?' + params.toString(), {
-    method: 'GET',
-    mode: 'no-cors'
-  })
-  .then(function() {
-    entries.unshift({
-      id: 'local-' + Date.now(),
-      timestamp: ts,
-      name: name,
-      prompt: prompt,
-      result: result,
-      screenshot: screenshot,
-      json: json,
-      severity: sevLabel
-    });
-    updateCount();
-    showSuccess();
-    setTimeout(loadEntries, 2000);
-  })
-  .catch(function(err) {
-    console.error('Submission error:', err);
-    alert('Something went wrong submitting. Please try again.');
-  })
-  .finally(function() {
+  window[cbName] = function(data) {
+    delete window[cbName];
     btn.disabled = false;
     btn.textContent = '✦ Log Feedback';
-  });
+    if (data && data.ok) {
+      entries.unshift({
+        id: 'local-' + Date.now(),
+        timestamp: ts,
+        name: name,
+        prompt: prompt,
+        result: result,
+        screenshot: screenshot,
+        json: json,
+        severity: sevLabel
+      });
+      updateCount();
+      showSuccess();
+      setTimeout(loadEntries, 2000);
+    } else {
+      alert('Something went wrong submitting. Please try again.');
+    }
+  };
+  var script = document.createElement('script');
+  script.onerror = function() {
+    delete window[cbName];
+    btn.disabled = false;
+    btn.textContent = '✦ Log Feedback';
+    alert('Something went wrong submitting. Please try again.');
+  };
+  script.src = APPS_SCRIPT_URL + '?' + params.toString();
+  document.head.appendChild(script);
 
-  // Reset form immediately
+  // Reset form immediately so user can log another entry
   document.getElementById('f-name').value = '';
   document.getElementById('f-prompt').value = '';
   document.getElementById('f-result').value = '';
