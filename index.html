@@ -101,13 +101,16 @@ a:hover{text-decoration:underline}
   padding:.75rem 1rem;font-size:13px;color:#6EE7B7;margin-top:1rem;display:none;
 }
 
-/* ── Tracker ── */
+/* ── Tracker toolbar ── */
 .tracker-toolbar{
-  display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;
+  display:flex;align-items:center;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap;
 }
+.toolbar-group{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.toolbar-divider{width:1px;height:20px;background:var(--faint);margin:0 .25rem}
+
 .filter-btn{
   display:flex;align-items:center;gap:.35rem;
-  padding:.35rem .85rem;border-radius:100px;font-size:12px;font-weight:500;
+  padding:.3rem .8rem;border-radius:100px;font-size:12px;font-weight:500;
   border:1px solid var(--faint);background:transparent;color:var(--muted);
   cursor:pointer;transition:all .15s;
 }
@@ -117,27 +120,28 @@ a:hover{text-decoration:underline}
 .filter-btn.active[data-filter="wrong"]{background:var(--amber-t);border-color:rgba(217,119,6,.35);color:#FCD34D}
 .filter-btn.active[data-filter="minor"]{background:var(--green-t);border-color:rgba(5,150,105,.35);color:#6EE7B7}
 .filter-btn.active[data-filter="idea"]{background:var(--blue-t);border-color:rgba(63,95,232,.35);color:#A5B8FF}
+.filter-btn.active[data-status="Open"]{background:var(--blue-t);border-color:rgba(63,95,232,.4);color:#A5B8FF}
+.filter-btn.active[data-status="Reviewing"]{background:var(--amber-t);border-color:rgba(217,119,6,.35);color:#FCD34D}
+.filter-btn.active[data-status="Resolved"]{background:var(--green-t);border-color:rgba(5,150,105,.35);color:#6EE7B7}
 
-.archive-toggle{
-  margin-left:auto;display:flex;align-items:center;gap:.4rem;
-  font-size:12px;color:var(--muted);cursor:pointer;user-select:none;
-  padding:.35rem .75rem;border-radius:100px;border:1px solid var(--faint);
-  background:transparent;transition:all .15s;
+.reload-btn{
+  margin-left:auto;padding:.3rem .7rem;border-radius:100px;font-size:12px;
+  border:1px solid var(--faint);background:transparent;color:var(--muted);
+  cursor:pointer;transition:all .15s;
 }
-.archive-toggle:hover{color:var(--ink);border-color:var(--muted)}
-.archive-toggle.showing{color:#A5B8FF;border-color:rgba(63,95,232,.4);background:var(--blue-t)}
+.reload-btn:hover{color:var(--ink);border-color:var(--muted)}
 
-/* Entry cards */
+/* ── Entry cards ── */
 .entry-list{display:flex;flex-direction:column;gap:.75rem}
 .entry-card{
   background:var(--surf);border:1px solid var(--faint);border-radius:10px;
-  padding:1rem 1.1rem;transition:border-color .15s;position:relative;
+  padding:1rem 1.1rem;transition:border-color .15s;
 }
-.entry-card:hover{border-color:rgba(63,95,232,.3)}
-.entry-card.archived{opacity:.45;border-style:dashed}
-.entry-card.archived:hover{opacity:.65}
+.entry-card:hover{border-color:rgba(63,95,232,.25)}
+.entry-card.status-resolved{opacity:.55}
+.entry-card.status-resolved:hover{opacity:.8}
 
-.entry-top{display:flex;align-items:flex-start;gap:.75rem;margin-bottom:.6rem}
+.entry-top{display:flex;align-items:flex-start;gap:.75rem}
 .sev-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px}
 .sev-dot.blocker{background:#DC2626}
 .sev-dot.wrong{background:#D97706}
@@ -155,19 +159,22 @@ a:hover{text-decoration:underline}
 .badge-minor{background:var(--green-t);color:#6EE7B7}
 .badge-idea{background:var(--blue-t);color:#A5B8FF}
 .badge-who{background:var(--surf2);color:var(--muted);border:1px solid var(--faint)}
-.badge-archived{background:rgba(123,141,176,.12);color:var(--muted);border:1px solid var(--faint)}
+.badge-type{background:var(--purple-t);color:#C4B5FD;border:1px solid rgba(160,52,231,.2)}
 
-.entry-actions{display:flex;align-items:center;gap:.4rem;flex-shrink:0;margin-top:2px}
-.action-btn{
-  padding:.25rem .6rem;border-radius:6px;font-size:11.5px;font-weight:500;
-  border:1px solid var(--faint);background:transparent;color:var(--muted);
-  cursor:pointer;transition:all .15s;white-space:nowrap;
+/* Status select inline */
+.status-select{
+  appearance:none;background:var(--surf2);border:1px solid var(--faint);
+  border-radius:100px;color:var(--muted);font-size:11px;font-weight:600;
+  font-family:var(--sans);padding:1px 22px 1px 8px;cursor:pointer;
+  outline:none;transition:all .15s;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237B8DB0'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 7px center;
 }
-.action-btn:hover{color:var(--ink);border-color:var(--muted)}
-.action-btn.resolve{color:#6EE7B7;border-color:rgba(5,150,105,.3)}
-.action-btn.resolve:hover{background:var(--green-t)}
-.action-btn.unarchive{color:#A5B8FF;border-color:rgba(63,95,232,.3)}
-.action-btn.unarchive:hover{background:var(--blue-t)}
+.status-select:hover{border-color:var(--muted);color:var(--ink)}
+.status-select.s-open{color:#A5B8FF;border-color:rgba(63,95,232,.4);background-color:var(--blue-t)}
+.status-select.s-reviewing{color:#FCD34D;border-color:rgba(217,119,6,.35);background-color:var(--amber-t)}
+.status-select.s-resolved{color:#6EE7B7;border-color:rgba(5,150,105,.35);background-color:var(--green-t)}
+.status-select option{background:#1E2A48;color:var(--ink)}
 
 .entry-links{font-size:12px;color:var(--muted);margin-top:.4rem}
 .entry-links a{color:#7BA3FF;font-size:12px}
@@ -175,8 +182,31 @@ a:hover{text-decoration:underline}
 .entry-json{
   margin-top:.6rem;background:var(--surf2);border-radius:6px;
   padding:.5rem .7rem;font-family:var(--mono);font-size:11px;color:#A5B8FF;
-  max-height:120px;overflow-y:auto;line-height:1.5;word-break:break-all;
+  max-height:100px;overflow-y:auto;line-height:1.5;word-break:break-all;
 }
+
+/* Notes section */
+.entry-notes{margin-top:.75rem;border-top:1px solid var(--faint);padding-top:.75rem}
+.notes-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem}
+.notes-text{font-size:12.5px;color:var(--ink);line-height:1.55;white-space:pre-wrap;word-break:break-word;margin-bottom:.4rem}
+.notes-empty{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:.4rem}
+.notes-input{
+  width:100%;background:var(--surf2);border:1px solid var(--faint);border-radius:7px;
+  color:var(--ink);font-family:var(--sans);font-size:12.5px;padding:.45rem .7rem;
+  outline:none;resize:vertical;min-height:60px;line-height:1.5;
+  transition:border-color .15s;display:none;
+}
+.notes-input:focus{border-color:var(--blue)}
+.notes-actions{display:flex;gap:.4rem;margin-top:.35rem}
+.notes-btn{
+  padding:.2rem .65rem;border-radius:6px;font-size:11.5px;font-weight:500;
+  border:1px solid var(--faint);background:transparent;color:var(--muted);
+  cursor:pointer;transition:all .15s;
+}
+.notes-btn:hover{color:var(--ink);border-color:var(--muted)}
+.notes-btn.save{background:var(--blue-t);border-color:rgba(63,95,232,.35);color:#A5B8FF;display:none}
+.notes-btn.save:hover{background:rgba(63,95,232,.25)}
+.notes-saving{font-size:11px;color:var(--muted);padding:.2rem .4rem}
 
 /* Empty state */
 .empty-state{text-align:center;padding:4rem 2rem;color:var(--muted)}
@@ -312,14 +342,23 @@ a:hover{text-decoration:underline}
 <!-- ── TRACKER ── -->
 <div class="view" id="view-tracker">
   <div class="tracker-toolbar">
-    <button class="filter-btn active" data-filter="all">All</button>
-    <button class="filter-btn" data-filter="blocker">🔴 Blocker</button>
-    <button class="filter-btn" data-filter="wrong">🟡 Wrong</button>
-    <button class="filter-btn" data-filter="minor">🟢 Minor</button>
-    <button class="filter-btn" data-filter="idea">💡 Idea</button>
-    <button class="archive-toggle" id="archive-toggle" onclick="toggleArchiveView()">
-      <span id="archive-toggle-icon">○</span> Show archived
-    </button>
+    <!-- Severity filters -->
+    <div class="toolbar-group">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="blocker">🔴 Blocker</button>
+      <button class="filter-btn" data-filter="wrong">🟡 Wrong</button>
+      <button class="filter-btn" data-filter="minor">🟢 Minor</button>
+      <button class="filter-btn" data-filter="idea">💡 Idea</button>
+    </div>
+    <div class="toolbar-divider"></div>
+    <!-- Status filters -->
+    <div class="toolbar-group">
+      <button class="filter-btn active" data-status="all">All statuses</button>
+      <button class="filter-btn" data-status="Open">Open</button>
+      <button class="filter-btn" data-status="Reviewing">Reviewing</button>
+      <button class="filter-btn" data-status="Resolved">Resolved</button>
+    </div>
+    <button class="reload-btn" onclick="loadEntries()">↺ Refresh</button>
   </div>
   <div class="entry-list" id="entry-list">
     <div class="loading">Loading entries…</div>
@@ -330,7 +369,7 @@ a:hover{text-decoration:underline}
 <div class="view" id="view-triage">
   <div class="triage-card">
     <div class="triage-title">Triage Report</div>
-    <div class="triage-sub">For Matt Mastrangelo + Rami — copy the prompt below and paste it into Claude.ai to generate a structured triage report from all active (non-archived) entries.</div>
+    <div class="triage-sub">For Matt Mastrangelo + Rami — copy the prompt below and paste it into Claude.ai to generate a structured triage report. Only Open and Reviewing entries are included.</div>
     <button class="copy-btn" onclick="copyTriagePrompt()">✦ Copy Prompt</button>
     <div class="copy-confirm" id="copy-confirm">✓ Copied — open <a href="https://claude.ai/new" target="_blank">claude.ai</a> and paste it in.</div>
     <div class="triage-divider"></div>
@@ -343,11 +382,9 @@ a:hover{text-decoration:underline}
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzArJI22fclKthWPZ88o9LL01B_bljmndv0y_cPouYSRHGwXOupXbBK-PPSjJVZ-yOt/exec';
 var SECRET_TOKEN = 'LrMaiNRq-YKBMFslT8wfX4GMcEG4_v-t';
 
-// Entries stored in memory; archived state persisted in localStorage
 var entries = [];
-var archivedIds = JSON.parse(localStorage.getItem('archivedIds') || '[]');
 var currentFilter = 'all';
-var showArchived = false;
+var currentStatusFilter = 'all';
 var selectedSev = '';
 
 // ── TABS ──
@@ -370,12 +407,22 @@ document.querySelectorAll('.sev-btn').forEach(function(btn) {
   });
 });
 
-// ── FILTER BUTTONS ──
-document.querySelectorAll('.filter-btn').forEach(function(btn) {
+// ── SEVERITY FILTER BUTTONS ──
+document.querySelectorAll('.filter-btn[data-filter]').forEach(function(btn) {
   btn.addEventListener('click', function() {
-    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.filter-btn[data-filter]').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
     currentFilter = btn.dataset.filter;
+    renderEntries();
+  });
+});
+
+// ── STATUS FILTER BUTTONS ──
+document.querySelectorAll('.filter-btn[data-status]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn[data-status]').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    currentStatusFilter = btn.dataset.status;
     renderEntries();
   });
 });
@@ -390,16 +437,19 @@ function loadEntries() {
     entries = (data.rows || []).map(function(r) {
       return {
         id:         'row-' + r.id,
+        rowId:      r.id,
         timestamp:  r.date,
         name:       r.name,
         prompt:     r.attempted,
         result:     r.actual,
         screenshot: r.screenshotLink,
         json:       r.json,
-        severity:   r.severity
+        severity:   r.severity,
+        type:       r.type   || '',
+        status:     r.status || 'Open',
+        notes:      r.notes  || ''
       };
     });
-    // Already reversed by Apps Script (newest first)
     updateCount();
     renderEntries();
   };
@@ -409,52 +459,40 @@ function loadEntries() {
 }
 
 function updateCount() {
-  var active = entries.filter(function(e) { return !archivedIds.includes(e.id); }).length;
-  document.getElementById('entry-count').textContent = active + ' entr' + (active === 1 ? 'y' : 'ies');
+  var open = entries.filter(function(e) { return e.status !== 'Resolved'; }).length;
+  document.getElementById('entry-count').textContent = open + ' open';
 }
 
 // ── RENDER TRACKER ──
 function renderEntries() {
   var list = document.getElementById('entry-list');
-  var sevMap = {
-    'blocker': '🔴 Blocker', 'wrong': '🟡 Wrong', 'minor': '🟢 Minor', 'idea': '💡 Idea',
-    '🔴 Blocker': 'blocker', '🟡 Wrong': 'wrong', '🟢 Minor': 'minor', '💡 Idea': 'idea'
-  };
 
   var filtered = entries.filter(function(e) {
     var sev = normSev(e.severity);
-    var isArchived = archivedIds.includes(e.id);
-    if (!showArchived && isArchived) return false;
-    if (showArchived && !isArchived) return false;
-    // When not showing archived, show all non-archived (respect filter)
-    if (!showArchived) {
-      if (currentFilter === 'all') return true;
-      return sev === currentFilter;
-    }
-    if (currentFilter === 'all') return true;
-    return sev === currentFilter;
+    if (currentFilter !== 'all' && sev !== currentFilter) return false;
+    if (currentStatusFilter !== 'all' && e.status !== currentStatusFilter) return false;
+    return true;
   });
 
   if (filtered.length === 0) {
-    list.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>' +
-      (showArchived ? 'No archived entries.' : 'No entries yet — be the first to log feedback!') +
-      '</p></div>';
+    list.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>No entries match this filter.</p></div>';
     return;
   }
 
   list.innerHTML = filtered.map(function(e) {
     var sev = normSev(e.severity);
-    var isArchived = archivedIds.includes(e.id);
     var sevLabel = {'blocker':'🔴 Blocker','wrong':'🟡 Wrong','minor':'🟢 Minor','idea':'💡 Idea'}[sev] || e.severity;
     var badgeClass = 'badge-' + (sev || 'minor');
-    var archiveBtn = isArchived
-      ? '<button class="action-btn unarchive" onclick="unarchiveEntry(\'' + e.id + '\')">↩ Restore</button>'
-      : '<button class="action-btn resolve" onclick="archiveEntry(\'' + e.id + '\')">✓ Resolved</button>';
-    var links = e.screenshot ? '<div class="entry-links"><a href="' + e.screenshot + '" target="_blank">📎 Screenshot</a></div>' : '';
+    var statusClass = 's-' + (e.status || 'open').toLowerCase().replace(/\s/g,'');
+    var links = e.screenshot ? '<div class="entry-links"><a href="' + escHtml(e.screenshot) + '" target="_blank">📎 Screenshot</a></div>' : '';
     var json = e.json ? '<div class="entry-json">' + escHtml(e.json) + '</div>' : '';
-    var archivedBadge = isArchived ? '<span class="badge badge-archived">Archived</span>' : '';
+    var typeBadge = e.type ? '<span class="badge badge-type">' + escHtml(e.type) + '</span>' : '';
+    var notesHtml = e.notes
+      ? '<div class="notes-text" id="notes-text-' + e.id + '">' + escHtml(e.notes) + '</div>'
+      : '<div class="notes-empty" id="notes-text-' + e.id + '">No notes yet.</div>';
+    var cardClass = 'entry-card' + (e.status === 'Resolved' ? ' status-resolved' : '');
 
-    return '<div class="entry-card' + (isArchived ? ' archived' : '') + '" id="card-' + e.id + '">' +
+    return '<div class="' + cardClass + '" id="card-' + e.id + '">' +
       '<div class="entry-top">' +
         '<div class="sev-dot ' + sev + '"></div>' +
         '<div class="entry-meta">' +
@@ -463,11 +501,33 @@ function renderEntries() {
           '<div class="entry-badges">' +
             '<span class="badge ' + badgeClass + '">' + sevLabel + '</span>' +
             '<span class="badge badge-who">' + escHtml(e.name) + '</span>' +
-            archivedBadge +
+            typeBadge +
           '</div>' +
           links + json +
         '</div>' +
-        '<div class="entry-actions">' + archiveBtn + '</div>' +
+        '<div class="entry-actions">' +
+          '<select class="status-select ' + statusClass + '" ' +
+            'onchange="updateStatus(\'' + e.id + '\',' + e.rowId + ',this)">' +
+            '<option' + (e.status==='Open'      ?' selected':'') + '>Open</option>' +
+            '<option' + (e.status==='Reviewing' ?' selected':'') + '>Reviewing</option>' +
+            '<option' + (e.status==='Resolved'  ?' selected':'') + '>Resolved</option>' +
+          '</select>' +
+        '</div>' +
+      '</div>' +
+      '<div class="entry-notes">' +
+        '<div class="notes-label">Notes</div>' +
+        notesHtml +
+        '<textarea class="notes-input" id="notes-input-' + e.id + '" ' +
+          'placeholder="Add a note…">' + escHtml(e.notes) + '</textarea>' +
+        '<div class="notes-actions">' +
+          '<button class="notes-btn edit" id="notes-edit-' + e.id + '" ' +
+            'onclick="editNotes(\'' + e.id + '\')">' + (e.notes ? '✏️ Edit' : '+ Add note') + '</button>' +
+          '<button class="notes-btn save" id="notes-save-' + e.id + '" ' +
+            'onclick="saveNotes(\'' + e.id + '\',' + e.rowId + ')">Save</button>' +
+          '<button class="notes-btn" id="notes-cancel-' + e.id + '" ' +
+            'onclick="cancelNotes(\'' + e.id + '\')" style="display:none">Cancel</button>' +
+          '<span class="notes-saving" id="notes-saving-' + e.id + '" style="display:none">Saving…</span>' +
+        '</div>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -477,9 +537,9 @@ function normSev(s) {
   if (!s) return 'minor';
   s = s.toLowerCase();
   if (s.includes('blocker')) return 'blocker';
-  if (s.includes('wrong')) return 'wrong';
-  if (s.includes('minor')) return 'minor';
-  if (s.includes('idea')) return 'idea';
+  if (s.includes('wrong'))   return 'wrong';
+  if (s.includes('minor'))   return 'minor';
+  if (s.includes('idea'))    return 'idea';
   return 'minor';
 }
 
@@ -490,36 +550,91 @@ function escHtml(str) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── ARCHIVE / RESTORE ──
-function archiveEntry(id) {
-  if (!archivedIds.includes(id)) {
-    archivedIds.push(id);
-    localStorage.setItem('archivedIds', JSON.stringify(archivedIds));
+// ── STATUS UPDATE ──
+function updateStatus(id, rowId, selectEl) {
+  var newStatus = selectEl.value;
+  // Update local state
+  var entry = entries.find(function(e) { return e.id === id; });
+  if (entry) entry.status = newStatus;
+
+  // Restyle the select
+  selectEl.className = 'status-select s-' + newStatus.toLowerCase();
+
+  // Dim card if resolved
+  var card = document.getElementById('card-' + id);
+  if (card) {
+    card.classList.toggle('status-resolved', newStatus === 'Resolved');
   }
+
   updateCount();
-  renderEntries();
+  scriptUpdate({ rowId: rowId, status: newStatus });
 }
 
-function unarchiveEntry(id) {
-  archivedIds = archivedIds.filter(function(x) { return x !== id; });
-  localStorage.setItem('archivedIds', JSON.stringify(archivedIds));
-  updateCount();
-  renderEntries();
+// ── NOTES EDITING ──
+function editNotes(id) {
+  document.getElementById('notes-text-' + id).style.display = 'none';
+  document.getElementById('notes-input-' + id).style.display = 'block';
+  document.getElementById('notes-edit-' + id).style.display = 'none';
+  document.getElementById('notes-save-' + id).style.display = 'inline-flex';
+  document.getElementById('notes-cancel-' + id).style.display = 'inline-flex';
+  document.getElementById('notes-input-' + id).focus();
 }
 
-function toggleArchiveView() {
-  showArchived = !showArchived;
-  var toggle = document.getElementById('archive-toggle');
-  var icon = document.getElementById('archive-toggle-icon');
-  if (showArchived) {
-    toggle.classList.add('showing');
-    icon.textContent = '●';
-    toggle.innerHTML = '<span id="archive-toggle-icon">●</span> Showing archived';
+function cancelNotes(id) {
+  var entry = entries.find(function(e) { return e.id === id; });
+  document.getElementById('notes-input-' + id).value = entry ? entry.notes : '';
+  document.getElementById('notes-text-' + id).style.display = '';
+  document.getElementById('notes-input-' + id).style.display = 'none';
+  document.getElementById('notes-edit-' + id).style.display = 'inline-flex';
+  document.getElementById('notes-save-' + id).style.display = 'none';
+  document.getElementById('notes-cancel-' + id).style.display = 'none';
+}
+
+function saveNotes(id, rowId) {
+  var newNotes = document.getElementById('notes-input-' + id).value.trim();
+  var savingEl = document.getElementById('notes-saving-' + id);
+  var saveBtn = document.getElementById('notes-save-' + id);
+  saveBtn.style.display = 'none';
+  savingEl.style.display = 'inline';
+
+  // Update local state
+  var entry = entries.find(function(e) { return e.id === id; });
+  if (entry) entry.notes = newNotes;
+
+  // Update display
+  var textEl = document.getElementById('notes-text-' + id);
+  if (newNotes) {
+    textEl.className = 'notes-text';
+    textEl.textContent = newNotes;
   } else {
-    toggle.classList.remove('showing');
-    toggle.innerHTML = '<span id="archive-toggle-icon">○</span> Show archived';
+    textEl.className = 'notes-empty';
+    textEl.textContent = 'No notes yet.';
   }
-  renderEntries();
+  var editBtn = document.getElementById('notes-edit-' + id);
+  editBtn.textContent = newNotes ? '✏️ Edit' : '+ Add note';
+
+  scriptUpdate({ rowId: rowId, notes: newNotes }, function() {
+    savingEl.style.display = 'none';
+    document.getElementById('notes-text-' + id).style.display = '';
+    document.getElementById('notes-input-' + id).style.display = 'none';
+    editBtn.style.display = 'inline-flex';
+    document.getElementById('notes-cancel-' + id).style.display = 'none';
+  });
+}
+
+// ── SCRIPT UPDATE (JSONP) ──
+function scriptUpdate(params, cb) {
+  var cbName = '_updateCb' + Date.now();
+  params.token = SECRET_TOKEN;
+  params.action = 'update';
+  params.callback = cbName;
+  window[cbName] = function(data) {
+    delete window[cbName];
+    if (cb) cb(data);
+  };
+  var script = document.createElement('script');
+  script.src = APPS_SCRIPT_URL + '?' + new URLSearchParams(params).toString();
+  document.head.appendChild(script);
 }
 
 // ── SUBMIT ──
@@ -541,7 +656,6 @@ function submitEntry() {
   btn.disabled = true;
   btn.textContent = 'Logging…';
 
-  // Use JSONP to submit (avoids CORS; Apps Script handles via doGet with action=append)
   var cbName = '_submitCallback' + Date.now();
   var params = new URLSearchParams({
     token:          SECRET_TOKEN,
@@ -555,28 +669,21 @@ function submitEntry() {
     severity:       sevLabel,
     callback:       cbName
   });
+
   window[cbName] = function(data) {
     delete window[cbName];
     btn.disabled = false;
     btn.textContent = '✦ Log Feedback';
     if (data && data.ok) {
-      entries.unshift({
-        id: 'local-' + Date.now(),
-        timestamp: ts,
-        name: name,
-        prompt: prompt,
-        result: result,
-        screenshot: screenshot,
-        json: json,
-        severity: sevLabel
-      });
-      updateCount();
-      showSuccess();
+      var banner = document.getElementById('success-banner');
+      banner.style.display = 'block';
+      setTimeout(function() { banner.style.display = 'none'; }, 4000);
       setTimeout(loadEntries, 2000);
     } else {
       alert('Something went wrong submitting. Please try again.');
     }
   };
+
   var script = document.createElement('script');
   script.onerror = function() {
     delete window[cbName];
@@ -587,7 +694,7 @@ function submitEntry() {
   script.src = APPS_SCRIPT_URL + '?' + params.toString();
   document.head.appendChild(script);
 
-  // Reset form immediately so user can log another entry
+  // Reset form immediately
   document.getElementById('f-name').value = '';
   document.getElementById('f-prompt').value = '';
   document.getElementById('f-result').value = '';
@@ -597,34 +704,28 @@ function submitEntry() {
   selectedSev = '';
 }
 
-function showSuccess() {
-  var banner = document.getElementById('success-banner');
-  banner.style.display = 'block';
-  setTimeout(function() { banner.style.display = 'none'; }, 4000);
-  updateCount();
-}
-
 // ── TRIAGE PROMPT ──
 function copyTriagePrompt() {
-  var active = entries.filter(function(e) { return !archivedIds.includes(e.id); });
+  var active = entries.filter(function(e) { return e.status !== 'Resolved'; });
   if (active.length === 0) {
-    alert('No active entries to triage.');
+    alert('No open entries to triage.');
     return;
   }
   var lines = ['You are triaging feedback on FEVO\'s Offer Creation AI Agent. Here are the open feedback entries:\n'];
   active.forEach(function(e, i) {
     lines.push('--- Entry ' + (i+1) + ' ---');
     lines.push('Severity: ' + e.severity);
+    lines.push('Status: ' + e.status);
     lines.push('Reporter: ' + e.name);
     lines.push('Prompt: ' + e.prompt);
     lines.push('What happened: ' + e.result);
+    if (e.notes) lines.push('Notes: ' + e.notes);
     if (e.json) lines.push('Tool output: ' + e.json);
     if (e.screenshot) lines.push('Screenshot: ' + e.screenshot);
     lines.push('');
   });
   lines.push('\nPlease triage these into: Bug (with severity), Behavior by Design, Needs Clarification, or Enhancement. For each bug, suggest a fix or next step.');
-  var text = lines.join('\n');
-  navigator.clipboard.writeText(text).then(function() {
+  navigator.clipboard.writeText(lines.join('\n')).then(function() {
     document.getElementById('copy-confirm').style.display = 'block';
   });
 }
